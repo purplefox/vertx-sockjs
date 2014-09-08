@@ -89,7 +89,7 @@ public class SockJSSocket implements ReadStream<SockJSSocket>,  WriteStream<Sock
     return ret;
   }
   public SockJSSocket dataHandler(Handler<Buffer> arg0) {
-    this.delegate.dataHandler(new Handler<io.vertx.core.buffer.Buffer>() {
+    ((io.vertx.core.streams.ReadStream) this.delegate).dataHandler(new Handler<io.vertx.core.buffer.Buffer>() {
       public void handle(io.vertx.core.buffer.Buffer event) {
         arg0.handle(new Buffer(event));
       }
@@ -97,35 +97,35 @@ public class SockJSSocket implements ReadStream<SockJSSocket>,  WriteStream<Sock
     return this;
   }
   public SockJSSocket pause() {
-    this.delegate.pause();
+    ((io.vertx.core.streams.ReadStream) this.delegate).pause();
     return this;
   }
   public SockJSSocket resume() {
-    this.delegate.resume();
+    ((io.vertx.core.streams.ReadStream) this.delegate).resume();
     return this;
   }
   public SockJSSocket endHandler(Handler<Void> arg0) {
-    this.delegate.endHandler(arg0);
+    ((io.vertx.core.streams.ReadStream) this.delegate).endHandler(arg0);
     return this;
   }
   public SockJSSocket exceptionHandler(Handler<Throwable> arg0) {
-    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.core.streams.ReadStream) delegate).exceptionHandler(arg0);
+    ((io.vertx.core.streams.StreamBase) this.delegate).exceptionHandler(arg0);
     return this;
   }
   public SockJSSocket writeBuffer(Buffer arg0) {
-    this.delegate.writeBuffer(arg0.getDelegate());
+    ((io.vertx.core.streams.WriteStream) this.delegate).writeBuffer(arg0.getDelegate());
     return this;
   }
   public SockJSSocket setWriteQueueMaxSize(int arg0) {
-    this.delegate.setWriteQueueMaxSize(arg0);
+    ((io.vertx.core.streams.WriteStream) this.delegate).setWriteQueueMaxSize(arg0);
     return this;
   }
   public boolean writeQueueFull() {
-    def ret = this.delegate.writeQueueFull();
+    def ret = ((io.vertx.core.streams.WriteStream) this.delegate).writeQueueFull();
     return ret;
   }
   public SockJSSocket drainHandler(Handler<Void> arg0) {
-    this.delegate.drainHandler(arg0);
+    ((io.vertx.core.streams.WriteStream) this.delegate).drainHandler(arg0);
     return this;
   }
 }
