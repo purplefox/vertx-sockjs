@@ -301,7 +301,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     if (message.replyAddress() != null) {
       envelope.putString("replyAddress", message.replyAddress());
     }
-    sock.writeBuffer(buffer(envelope.encode()));
+    sock.write(buffer(envelope.encode()));
   }
 
   private void doSendOrPub(final boolean send, final SockJSSocket sock, final String address,
@@ -382,7 +382,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
             new JsonObject().putString("address", replyAddress).putNumber("failureCode",
               cause.failureCode()).putString("failureType", cause.failureType().name())
               .putString("message", cause.getMessage());
-          sock.writeBuffer(buffer(envelope.encode()));
+          sock.write(buffer(envelope.encode()));
         }
         info.handlerCount--;
       };
@@ -393,7 +393,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
       log.debug("Forwarding message to address " + address + " on event bus");
     }
     if (send) {
-      eb.sendWithOptions(address, body, DeliveryOptions.options().setSendTimeout(replyTimeout), replyHandler);
+      eb.send(address, body, DeliveryOptions.options().setSendTimeout(replyTimeout), replyHandler);
       if (replyAddress != null) {
         info.handlerCount++;
       }
@@ -480,7 +480,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
   private static void replyStatus(SockJSSocket sock, String replyAddress, String status) {
     JsonObject body = new JsonObject().putString("status", status);
     JsonObject envelope = new JsonObject().putString("address", replyAddress).putValue("body", body);
-    sock.writeBuffer(buffer(envelope.encode()));
+    sock.write(buffer(envelope.encode()));
   }
 
   private static boolean structureMatches(JsonObject match, Object bodyObject) {

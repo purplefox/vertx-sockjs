@@ -51,7 +51,7 @@ class JsonPTransport extends BaseTransport {
           callback = req.params().get("c");
           if (callback == null) {
             req.response().setStatusCode(500);
-            req.response().writeStringAndEnd("\"callback\" parameter required\n");
+            req.response().end("\"callback\" parameter required\n");
             return;
           }
         }
@@ -95,13 +95,13 @@ class JsonPTransport extends BaseTransport {
           urlEncoded = false;
         } else {
           req.response().setStatusCode(500);
-          req.response().writeStringAndEnd("Invalid Content-Type");
+          req.response().end("Invalid Content-Type");
           return;
         }
 
         if (body.equals("") || urlEncoded && (!body.startsWith("d=") || body.length() <= 2)) {
           req.response().setStatusCode(500);
-          req.response().writeStringAndEnd("Payload expected.");
+          req.response().end("Payload expected.");
           return;
         }
 
@@ -120,7 +120,7 @@ class JsonPTransport extends BaseTransport {
           setJSESSIONID(options, req);
           req.response().headers().set("Content-Type", "text/plain; charset=UTF-8");
           setNoCacheHeaders(req);
-          req.response().writeStringAndEnd("ok");
+          req.response().end("ok");
           if (log.isTraceEnabled()) log.trace("send handled ok");
         }
       }
@@ -161,7 +161,7 @@ class JsonPTransport extends BaseTransport {
 
       //End the response and close the HTTP connection
 
-      req.response().writeString(sb.toString());
+      req.response().write(sb.toString());
       close();
     }
 

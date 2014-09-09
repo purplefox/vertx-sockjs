@@ -41,7 +41,7 @@ public abstract class SockJSSocketBase implements SockJSSocket {
 
   protected SockJSSocketBase(Vertx vertx) {
     this.vertx = vertx;
-    Handler<Message<Buffer>> writeHandler = buff -> writeBuffer(buff.body());
+    Handler<Message<Buffer>> writeHandler = buff -> write(buff.body());
     this.writeHandlerID = UUID.randomUUID().toString();
     this.registration = vertx.eventBus().registerLocalHandler(writeHandlerID, writeHandler);
   }

@@ -105,7 +105,7 @@ class XhrTransport extends BaseTransport {
         String msgs = buff.toString();
         if (msgs.equals("")) {
           req.response().setStatusCode(500);
-          req.response().writeStringAndEnd("Payload expected.");
+          req.response().end("Payload expected.");
           return;
         }
         if (!session.handleMessages(msgs)) {
@@ -155,7 +155,7 @@ class XhrTransport extends BaseTransport {
 
     public void sendFrame(String body) {
       super.sendFrame(body);
-      req.response().writeString(body + "\n");
+      req.response().write(body + "\n");
       close();
     }
 
@@ -189,11 +189,11 @@ class XhrTransport extends BaseTransport {
       boolean hr = headersWritten;
       super.sendFrame(body);
       if (!hr) {
-        req.response().writeBuffer(H_BLOCK);
+        req.response().write(H_BLOCK);
       }
       String sbody = body + "\n";
       Buffer buff = buffer(sbody);
-      req.response().writeBuffer(buff);
+      req.response().write(buff);
       bytesSent += buff.length();
       if (bytesSent >= maxBytesStreaming) {
         close();

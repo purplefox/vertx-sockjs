@@ -76,7 +76,7 @@ class HtmlFileTransport extends BaseTransport {
           callback = req.params().get("c");
           if (callback == null) {
             req.response().setStatusCode(500);
-            req.response().writeStringAndEnd("\"callback\" parameter required\n");
+            req.response().end("\"callback\" parameter required\n");
             return;
           }
         }
@@ -112,7 +112,7 @@ class HtmlFileTransport extends BaseTransport {
         setNoCacheHeaders(req);
         req.response().setChunked(true);
         setJSESSIONID(options, req);
-        req.response().writeString(htmlFile);
+        req.response().end(htmlFile);
         headersWritten = true;
       }
       body = escapeForJavaScript(body);
@@ -121,7 +121,7 @@ class HtmlFileTransport extends BaseTransport {
       sb.append(body);
       sb.append("\");\n</script>\r\n");
       Buffer buff = buffer(sb.toString());
-      req.response().writeBuffer(buff);
+      req.response().end(buff);
       bytesSent += buff.length();
       if (bytesSent >= maxBytesStreaming) {
         if (log.isTraceEnabled()) log.trace("More than maxBytes sent so closing connection");

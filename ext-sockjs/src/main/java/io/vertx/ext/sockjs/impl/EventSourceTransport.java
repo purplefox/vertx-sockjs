@@ -74,7 +74,7 @@ class EventSourceTransport extends BaseTransport {
         setNoCacheHeaders(req);
         setJSESSIONID(options, req);
         req.response().setChunked(true);
-        req.response().writeString("\r\n");
+        req.response().write("\r\n");
         headersWritten = true;
       }
       StringBuilder sb = new StringBuilder();
@@ -82,7 +82,7 @@ class EventSourceTransport extends BaseTransport {
       sb.append(body);
       sb.append("\r\n\r\n");
       Buffer buff = buffer(sb.toString());
-      req.response().writeBuffer(buff);
+      req.response().write(buff);
       bytesSent += buff.length();
       if (bytesSent >= maxBytesStreaming) {
         if (log.isTraceEnabled()) log.trace("More than maxBytes sent so closing connection");

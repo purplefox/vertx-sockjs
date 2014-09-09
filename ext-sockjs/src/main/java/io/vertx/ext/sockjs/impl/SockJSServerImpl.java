@@ -127,7 +127,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
       public void handle(HttpServerRequest req) {
         if (log.isTraceEnabled()) log.trace("Returning welcome response");
         req.response().headers().set("Content-Type", "text/plain; charset=UTF-8");
-        req.response().writeStringAndEnd("Welcome to SockJS!\n");
+        req.response().end("Welcome to SockJS!\n");
       }
     });
 
@@ -228,7 +228,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
           TimeoutInfo timeout = iter.next();
           vertx.setTimer(timeout.timeout, new Handler<Long>() {
             public void handle(Long id) {
-              response.writeBuffer(timeout.buff);
+              response.write(timeout.buff);
               nextTimeout(timeouts, iter, response);
             }
           });
@@ -284,7 +284,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
             String expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(new Date(System.currentTimeMillis() + oneYear));
             req.response().headers().set("Expires", expires);
             req.response().headers().set("ETag", etag);
-            req.response().writeStringAndEnd(iframeHTML);
+            req.response().end(iframeHTML);
           }
         } catch (Exception e) {
           log.error("Failed to server iframe", e);
@@ -343,14 +343,14 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
    */
   public void installTestApplications() {
     installApp(SockJSServerOptions.options().setPrefix("/echo").setMaxBytesStreaming(4096),
-               sock -> sock.dataHandler(sock::writeBuffer));
+               sock -> sock.dataHandler(sock::write));
     installApp(SockJSServerOptions.options().setPrefix("/close").setMaxBytesStreaming(4096),
                sock -> sock.close());
     installApp(SockJSServerOptions.options().setPrefix("/disabled_websocket_echo").setMaxBytesStreaming(4096).addDisabledTransport("WEBSOCKET"),
-      sock -> sock.dataHandler(sock::writeBuffer));
+      sock -> sock.dataHandler(sock::write));
     installApp(SockJSServerOptions.options().setPrefix("/ticker").setMaxBytesStreaming(4096),
       sock -> {
-        long timerID = vertx.setPeriodic(1000, tid -> sock.writeBuffer(buffer("tick!")));
+        long timerID = vertx.setPeriodic(1000, tid -> sock.write(buffer("tick!")));
         sock.endHandler(v -> vertx.cancelTimer(timerID));
       });
     installApp(SockJSServerOptions.options().setPrefix("/amplify").setMaxBytesStreaming(4096),
@@ -366,7 +366,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
           for (int i = 0; i < num; i++) {
             buff.appendByte((byte) 'x');
           }
-          sock.writeBuffer(buff);
+          sock.write(buff);
         });
       });
     installApp(SockJSServerOptions.options().setPrefix("/broadcast").setMaxBytesStreaming(4096),
@@ -390,7 +390,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
       });
 
     installApp(SockJSServerOptions.options().setPrefix("/cookie_needed_echo").setMaxBytesStreaming(4096).setInsertJSESSIONID(true),
-      sock -> sock.dataHandler(sock::writeBuffer));
+      sock -> sock.dataHandler(sock::write));
   }
 
 }

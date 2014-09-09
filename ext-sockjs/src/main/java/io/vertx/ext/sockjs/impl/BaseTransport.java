@@ -70,7 +70,7 @@ class BaseTransport {
   protected void sendInvalidJSON(HttpServerResponse response) {
     if (log.isTraceEnabled()) log.trace("Broken JSON");
     response.setStatusCode(500);
-    response.writeStringAndEnd("Broken JSON encoding.");
+    response.end("Broken JSON encoding.");
   }
 
   protected String escapeForJavaScript(String str) {
@@ -164,7 +164,7 @@ class BaseTransport {
         // the result is not negative
         json.putNumber("entropy", RAND_OFFSET + new Random().nextInt());
         setCORS(req);
-        req.response().writeStringAndEnd(json.encode());
+        req.response().end(json.encode());
       }
     };
   }

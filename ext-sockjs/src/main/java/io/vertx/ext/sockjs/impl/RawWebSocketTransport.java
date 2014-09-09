@@ -68,8 +68,8 @@ class RawWebSocketTransport {
       return this;
     }
 
-    public SockJSSocket writeBuffer(Buffer data) {
-      ws.writeBuffer(data);
+    public SockJSSocket write(Buffer data) {
+      ws.write(data);
       return this;
     }
 
@@ -142,7 +142,7 @@ class RawWebSocketTransport {
     rm.getWithRegEx(wsRE, new Handler<HttpServerRequest>() {
       public void handle(HttpServerRequest request) {
         request.response().setStatusCode(400);
-        request.response().writeStringAndEnd("Can \"Upgrade\" only to \"WebSocket\".");
+        request.response().end("Can \"Upgrade\" only to \"WebSocket\".");
       }
     });
 

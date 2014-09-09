@@ -34,24 +34,38 @@ var SockJSServer = function(j_val) {
   var that = this;
 
   this.installApp = function(options, sockHandler) {
-    j_sockJSServer.installApp(options != null ? SockJSServerOptions.optionsFromJson(new JsonObject(JSON.stringify(options))) : null, function(jVal) {
+    var __args = arguments;
+    if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
+      j_sockJSServer.installApp(options != null ? SockJSServerOptions.optionsFromJson(new JsonObject(JSON.stringify(options))) : null, function(jVal) {
       sockHandler(new SockJSSocket(jVal));
     });
-    return that;
+      return that;
+    } else utils.invalidArgs();
   };
 
   this.bridge = function(options, bridgeOptions) {
-    j_sockJSServer.bridge(options != null ? SockJSServerOptions.optionsFromJson(new JsonObject(JSON.stringify(options))) : null, bridgeOptions != null ? BridgeOptions.optionsFromJson(new JsonObject(JSON.stringify(bridgeOptions))) : null);
-    return that;
+    var __args = arguments;
+    if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'object') {
+      j_sockJSServer.bridge(options != null ? SockJSServerOptions.optionsFromJson(new JsonObject(JSON.stringify(options))) : null, bridgeOptions != null ? BridgeOptions.optionsFromJson(new JsonObject(JSON.stringify(bridgeOptions))) : null);
+      return that;
+    } else utils.invalidArgs();
   };
 
   this.close = function() {
-    j_sockJSServer.close();
+    var __args = arguments;
+    if (__args.length === 0) {
+      j_sockJSServer.close();
+    } else utils.invalidArgs();
   };
 
   this.installTestApplications = function() {
-    j_sockJSServer.installTestApplications();
+    var __args = arguments;
+    if (__args.length === 0) {
+      j_sockJSServer.installTestApplications();
+    } else utils.invalidArgs();
   };
+
+  this._vertxgen = true;
 
   // Get a reference to the underlying Java delegate
   this._jdel = function() {
@@ -61,7 +75,10 @@ var SockJSServer = function(j_val) {
 };
 
 SockJSServer.sockJSServer = function(vertx, httpServer) {
-  return new SockJSServer(JSockJSServer.sockJSServer(vertx._jdel(), httpServer._jdel()));
+  var __args = arguments;
+  if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._vertxgen && typeof __args[1] === 'object' && __args[1]._vertxgen) {
+    return new SockJSServer(JSockJSServer.sockJSServer(vertx._jdel(), httpServer._jdel()));
+  } else utils.invalidArgs();
 };
 
 // We export the Constructor function

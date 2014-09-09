@@ -41,7 +41,10 @@ var SockJSSocket = function(j_val) {
   
   */
   this.writeHandlerID = function() {
-    return j_sockJSSocket.writeHandlerID();
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_sockJSSocket.writeHandlerID();
+    } else utils.invalidArgs();
   };
 
   /*
@@ -49,7 +52,10 @@ var SockJSSocket = function(j_val) {
   
   */
   this.close = function() {
-    j_sockJSSocket.close();
+    var __args = arguments;
+    if (__args.length === 0) {
+      j_sockJSSocket.close();
+    } else utils.invalidArgs();
   };
 
   /*
@@ -57,7 +63,10 @@ var SockJSSocket = function(j_val) {
   
   */
   this.remoteAddress = function() {
-    return new SocketAddress(j_sockJSSocket.remoteAddress());
+    var __args = arguments;
+    if (__args.length === 0) {
+      return new SocketAddress(j_sockJSSocket.remoteAddress());
+    } else utils.invalidArgs();
   };
 
   /*
@@ -65,7 +74,10 @@ var SockJSSocket = function(j_val) {
   
   */
   this.localAddress = function() {
-    return new SocketAddress(j_sockJSSocket.localAddress());
+    var __args = arguments;
+    if (__args.length === 0) {
+      return new SocketAddress(j_sockJSSocket.localAddress());
+    } else utils.invalidArgs();
   };
 
   /*
@@ -74,7 +86,10 @@ var SockJSSocket = function(j_val) {
   
   */
   this.headers = function() {
-    return new Headers(j_sockJSSocket.headers());
+    var __args = arguments;
+    if (__args.length === 0) {
+      return new Headers(j_sockJSSocket.headers());
+    } else utils.invalidArgs();
   };
 
   /*
@@ -82,56 +97,88 @@ var SockJSSocket = function(j_val) {
   
   */
   this.uri = function() {
-    return j_sockJSSocket.uri();
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_sockJSSocket.uri();
+    } else utils.invalidArgs();
   };
 
   this.dataHandler = function(arg0) {
-    j_sockJSSocket.dataHandler(function(jVal) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'function') {
+      j_sockJSSocket.dataHandler(function(jVal) {
       arg0(new Buffer(jVal));
     });
-    return that;
+      return that;
+    } else utils.invalidArgs();
   };
 
   this.pause = function() {
-    j_sockJSSocket.pause();
-    return that;
+    var __args = arguments;
+    if (__args.length === 0) {
+      j_sockJSSocket.pause();
+      return that;
+    } else utils.invalidArgs();
   };
 
   this.resume = function() {
-    j_sockJSSocket.resume();
-    return that;
+    var __args = arguments;
+    if (__args.length === 0) {
+      j_sockJSSocket.resume();
+      return that;
+    } else utils.invalidArgs();
   };
 
   this.endHandler = function(arg0) {
-    j_sockJSSocket.endHandler(arg0);
-    return that;
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'function') {
+      j_sockJSSocket.endHandler(arg0);
+      return that;
+    } else utils.invalidArgs();
   };
 
   this.exceptionHandler = function(arg0) {
-    j_sockJSSocket.exceptionHandler(function(jVal) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'function') {
+      j_sockJSSocket.exceptionHandler(function(jVal) {
       arg0(new Throwable(jVal));
     });
-    return that;
+      return that;
+    } else utils.invalidArgs();
   };
 
-  this.writeBuffer = function(arg0) {
-    j_sockJSSocket.writeBuffer(arg0._jdel());
-    return that;
+  this.write = function(arg0) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'object' && __args[0]._vertxgen) {
+      j_sockJSSocket.write(arg0._jdel());
+      return that;
+    } else utils.invalidArgs();
   };
 
   this.setWriteQueueMaxSize = function(arg0) {
-    j_sockJSSocket.setWriteQueueMaxSize(arg0);
-    return that;
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] ==='number') {
+      j_sockJSSocket.setWriteQueueMaxSize(arg0);
+      return that;
+    } else utils.invalidArgs();
   };
 
   this.writeQueueFull = function() {
-    return j_sockJSSocket.writeQueueFull();
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_sockJSSocket.writeQueueFull();
+    } else utils.invalidArgs();
   };
 
   this.drainHandler = function(arg0) {
-    j_sockJSSocket.drainHandler(arg0);
-    return that;
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'function') {
+      j_sockJSSocket.drainHandler(arg0);
+      return that;
+    } else utils.invalidArgs();
   };
+
+  this._vertxgen = true;
 
   // Get a reference to the underlying Java delegate
   this._jdel = function() {
