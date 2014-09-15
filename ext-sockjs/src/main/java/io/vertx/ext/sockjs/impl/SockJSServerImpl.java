@@ -56,7 +56,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
   private static final Logger log = LoggerFactory.getLogger(SockJSServerImpl.class);
 
   private final Vertx vertx;
-  private RouteMatcher rm = RouteMatcher.newRouteMatcher();
+  private RouteMatcher rm = RouteMatcher.routeMatcher();
   private WebSocketMatcher wsMatcher = new WebSocketMatcher();
   private final LocalMap<String, Session> sessions;
   private EventBusBridgeHook hook;
