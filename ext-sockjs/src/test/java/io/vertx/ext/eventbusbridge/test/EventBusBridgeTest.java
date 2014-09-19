@@ -75,7 +75,7 @@ public class EventBusBridgeTest extends VertxTestBase {
         msg = new JsonObject().putString("type", "send").putString("address", "someaddress").putString("body", "hello world");
         ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
 
-        ws.dataHandler(buff -> {
+        ws.handler(buff -> {
           String str = buff.toString();
           JsonObject received = new JsonObject(str);
           assertEquals("hello world", received.getString("body"));

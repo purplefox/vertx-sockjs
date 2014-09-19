@@ -103,10 +103,10 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this.dataHandler = function(arg0) {
+  this.handler = function(arg0) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'function') {
-      j_sockJSSocket.dataHandler(function(jVal) {
+      j_sockJSSocket.handler(function(jVal) {
       arg0(new Buffer(jVal));
     });
       return that;
