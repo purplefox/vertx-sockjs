@@ -53,8 +53,8 @@ class RawWebSocketTransport {
       });
     }
 
-    public SockJSSocket dataHandler(Handler<Buffer> handler) {
-      ws.dataHandler(handler);
+    public SockJSSocket handler(Handler<Buffer> handler) {
+      ws.handler(handler);
       return this;
     }
 

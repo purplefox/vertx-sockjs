@@ -343,11 +343,11 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
    */
   public void installTestApplications() {
     installApp(SockJSServerOptions.options().setPrefix("/echo").setMaxBytesStreaming(4096),
-               sock -> sock.dataHandler(sock::write));
+               sock -> sock.handler(sock::write));
     installApp(SockJSServerOptions.options().setPrefix("/close").setMaxBytesStreaming(4096),
                sock -> sock.close());
     installApp(SockJSServerOptions.options().setPrefix("/disabled_websocket_echo").setMaxBytesStreaming(4096).addDisabledTransport("WEBSOCKET"),
-      sock -> sock.dataHandler(sock::write));
+      sock -> sock.handler(sock::write));
     installApp(SockJSServerOptions.options().setPrefix("/ticker").setMaxBytesStreaming(4096),
       sock -> {
         long timerID = vertx.setPeriodic(1000, tid -> sock.write(buffer("tick!")));
@@ -355,7 +355,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
       });
     installApp(SockJSServerOptions.options().setPrefix("/amplify").setMaxBytesStreaming(4096),
       sock -> {
-        sock.dataHandler(data -> {
+        sock.handler(data -> {
           String str = data.toString();
           int n = Integer.valueOf(str);
           if (n < 0 || n > 19) {
@@ -374,11 +374,9 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
         Set<String> connections = new HashSet<>();
         public void handle(SockJSSocket sock) {
           connections.add(sock.writeHandlerID());
-          sock.dataHandler(new Handler<Buffer>() {
-            public void handle(Buffer buffer) {
-              for (String actorID : connections) {
-                vertx.eventBus().publish(actorID, buffer);
-              }
+          sock.handler(buffer -> {
+            for (String actorID : connections) {
+              vertx.eventBus().publish(actorID, buffer);
             }
           });
           sock.endHandler(new VoidHandler() {
@@ -390,7 +388,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
       });
 
     installApp(SockJSServerOptions.options().setPrefix("/cookie_needed_echo").setMaxBytesStreaming(4096).setInsertJSESSIONID(true),
-      sock -> sock.dataHandler(sock::write));
+      sock -> sock.handler(sock::write));
   }
 
 }

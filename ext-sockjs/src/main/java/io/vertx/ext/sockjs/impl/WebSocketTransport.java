@@ -18,8 +18,6 @@ package io.vertx.ext.sockjs.impl;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.VoidHandler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.WebSocketFrame;
@@ -82,35 +80,29 @@ class WebSocketTransport extends BaseTransport {
     WebSocketListener(final ServerWebSocket ws, final Session session) {
       this.ws = ws;
       this.session = session;
-      ws.dataHandler(new Handler<Buffer>() {
-        public void handle(Buffer data) {
-          if (!session.isClosed()) {
-            String msgs = data.toString();
-            if (msgs.equals("")) {
-              //Ignore empty frames
-            } else if ((msgs.startsWith("[\"") && msgs.endsWith("\"]")) ||
-                       (msgs.startsWith("\"") && msgs.endsWith("\""))) {
-              session.handleMessages(msgs);
-            } else {
-              //Invalid JSON - we close the connection
-              close();
-            }
+      ws.handler(data -> {
+        if (!session.isClosed()) {
+          String msgs = data.toString();
+          if (msgs.equals("")) {
+            //Ignore empty frames
+          } else if ((msgs.startsWith("[\"") && msgs.endsWith("\"]")) ||
+                     (msgs.startsWith("\"") && msgs.endsWith("\""))) {
+            session.handleMessages(msgs);
+          } else {
+            //Invalid JSON - we close the connection
+            close();
           }
         }
       });
-      ws.closeHandler(new VoidHandler() {
-        public void handle() {
-          closed = true;
-          session.shutdown();
-        }
+      ws.closeHandler(v -> {
+        closed = true;
+        session.shutdown();
       });
-      ws.exceptionHandler(new Handler<Throwable>() {
-        public void handle(Throwable t) {
-          closed = true;
-          session.shutdown();
-          session.handleException(t);
-          }
-      });
+      ws.exceptionHandler(t -> {
+        closed = true;
+        session.shutdown();
+        session.handleException(t);
+        });
     }
 
     public void sendFrame(final String body) {

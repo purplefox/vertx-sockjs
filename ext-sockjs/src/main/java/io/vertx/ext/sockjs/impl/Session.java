@@ -105,7 +105,7 @@ class Session extends SockJSSocketBase implements Shareable {
   }
 
   @Override
-  public synchronized Session dataHandler(Handler<Buffer> handler) {
+  public synchronized Session handler(Handler<Buffer> handler) {
     this.dataHandler = handler;
     return this;
   }

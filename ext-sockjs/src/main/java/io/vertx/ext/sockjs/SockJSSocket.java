@@ -18,6 +18,7 @@ package io.vertx.ext.sockjs;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Headers;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
@@ -33,7 +34,7 @@ import io.vertx.core.streams.WriteStream;
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 @VertxGen
-public interface SockJSSocket extends ReadStream<SockJSSocket>, WriteStream<SockJSSocket> {
+public interface SockJSSocket extends ReadStream<SockJSSocket, Buffer>, WriteStream<SockJSSocket, Buffer> {
 
   /**
    * When a {@code SockJSSocket} is created it automatically registers an event handler with the event bus, the ID of that

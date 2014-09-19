@@ -244,7 +244,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
       final Map<String, Registration> registrations = new HashMap<>();
 
       sock.endHandler(v ->  handleSocketClosed(sock, registrations));
-      sock.dataHandler(data ->  handleSocketData(sock, data, registrations));
+      sock.handler(data ->  handleSocketData(sock, data, registrations));
 
       // Start a checker to check for pings
       final PingInfo pingInfo = new PingInfo();
