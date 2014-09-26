@@ -24,7 +24,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.eventbus.Registration;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -102,7 +102,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     this.replyTimeout = options.getReplyTimeout();
   }
 
-  private void handleSocketClosed(SockJSSocket sock, Map<String, Registration> registrations) {
+  private void handleSocketClosed(SockJSSocket sock, Map<String, MessageConsumer> registrations) {
     // On close unregister any handlers that haven't been unregistered
     registrations.entrySet().forEach(entry -> {
       handleUnregister(sock, entry.getKey());
@@ -130,7 +130,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     handleSocketClosed(sock);
   }
 
-  private void handleSocketData(SockJSSocket sock, Buffer data, Map<String, Registration> registrations) {
+  private void handleSocketData(SockJSSocket sock, Buffer data, Map<String, MessageConsumer> registrations) {
     JsonObject msg = new JsonObject(data.toString());
 
     String type = getMandatoryString(msg, "type");
@@ -174,7 +174,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     }
   }
 
-  private void internalHandleRegister(final SockJSSocket sock, JsonObject message, final String address, Map<String, Registration> registrations) {
+  private void internalHandleRegister(final SockJSSocket sock, JsonObject message, final String address, Map<String, MessageConsumer> registrations) {
     if (address.length() > maxAddressLength) {
       log.error("Refusing to register as address length > max_address_length");
       return;
@@ -206,7 +206,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
             }
           }
         };
-        Registration reg = eb.registerHandler(address, handler);
+        MessageConsumer reg = eb.consumer(address).handler(handler);
         registrations.put(address, reg);
         handlePostRegister(sock, address);
         info.handlerCount++;
@@ -219,9 +219,9 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     }
   }
 
-  private void internalHandleUnregister(SockJSSocket sock, String address, Map<String, Registration> registrations) {
+  private void internalHandleUnregister(SockJSSocket sock, String address, Map<String, MessageConsumer> registrations) {
     if (handleUnregister(sock, address)) {
-      Registration reg = registrations.remove(address);
+      MessageConsumer reg = registrations.remove(address);
       if (reg != null) {
         reg.unregister();
         SockInfo info = sockInfos.get(sock);
@@ -241,7 +241,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     if (!handleSocketCreated(sock)) {
       sock.close();
     } else {
-      final Map<String, Registration> registrations = new HashMap<>();
+      final Map<String, MessageConsumer> registrations = new HashMap<>();
 
       sock.endHandler(v ->  handleSocketClosed(sock, registrations));
       sock.handler(data ->  handleSocketData(sock, data, registrations));
@@ -393,7 +393,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
       log.debug("Forwarding message to address " + address + " on event bus");
     }
     if (send) {
-      eb.send(address, body, DeliveryOptions.options().setSendTimeout(replyTimeout), replyHandler);
+      eb.send(address, body, new DeliveryOptions().setSendTimeout(replyTimeout), replyHandler);
       if (replyAddress != null) {
         info.handlerCount++;
       }

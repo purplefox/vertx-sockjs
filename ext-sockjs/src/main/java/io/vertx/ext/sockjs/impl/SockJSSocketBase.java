@@ -20,14 +20,14 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.eventbus.Registration;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.ext.sockjs.SockJSSocket;
 
 import java.util.UUID;
 
 public abstract class SockJSSocketBase implements SockJSSocket {
 
-  private final Registration registration;
+  private final MessageConsumer<Buffer> registration;
   protected final Vertx vertx;
 
   /**
@@ -43,7 +43,7 @@ public abstract class SockJSSocketBase implements SockJSSocket {
     this.vertx = vertx;
     Handler<Message<Buffer>> writeHandler = buff -> write(buff.body());
     this.writeHandlerID = UUID.randomUUID().toString();
-    this.registration = vertx.eventBus().registerLocalHandler(writeHandlerID, writeHandler);
+    this.registration = vertx.eventBus().<Buffer>consumer(writeHandlerID).handler(writeHandler);
   }
 
   @Override

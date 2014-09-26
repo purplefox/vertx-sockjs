@@ -342,18 +342,18 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
   These applications are required by the SockJS protocol and QUnit tests
    */
   public void installTestApplications() {
-    installApp(SockJSServerOptions.options().setPrefix("/echo").setMaxBytesStreaming(4096),
+    installApp(new SockJSServerOptions().setPrefix("/echo").setMaxBytesStreaming(4096),
                sock -> sock.handler(sock::write));
-    installApp(SockJSServerOptions.options().setPrefix("/close").setMaxBytesStreaming(4096),
+    installApp(new SockJSServerOptions().setPrefix("/close").setMaxBytesStreaming(4096),
                sock -> sock.close());
-    installApp(SockJSServerOptions.options().setPrefix("/disabled_websocket_echo").setMaxBytesStreaming(4096).addDisabledTransport("WEBSOCKET"),
+    installApp(new SockJSServerOptions().setPrefix("/disabled_websocket_echo").setMaxBytesStreaming(4096).addDisabledTransport("WEBSOCKET"),
       sock -> sock.handler(sock::write));
-    installApp(SockJSServerOptions.options().setPrefix("/ticker").setMaxBytesStreaming(4096),
+    installApp(new SockJSServerOptions().setPrefix("/ticker").setMaxBytesStreaming(4096),
       sock -> {
         long timerID = vertx.setPeriodic(1000, tid -> sock.write(buffer("tick!")));
         sock.endHandler(v -> vertx.cancelTimer(timerID));
       });
-    installApp(SockJSServerOptions.options().setPrefix("/amplify").setMaxBytesStreaming(4096),
+    installApp(new SockJSServerOptions().setPrefix("/amplify").setMaxBytesStreaming(4096),
       sock -> {
         sock.handler(data -> {
           String str = data.toString();
@@ -369,7 +369,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
           sock.write(buff);
         });
       });
-    installApp(SockJSServerOptions.options().setPrefix("/broadcast").setMaxBytesStreaming(4096),
+    installApp(new SockJSServerOptions().setPrefix("/broadcast").setMaxBytesStreaming(4096),
       new Handler<SockJSSocket>() {
         Set<String> connections = new HashSet<>();
         public void handle(SockJSSocket sock) {
@@ -387,7 +387,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
         }
       });
 
-    installApp(SockJSServerOptions.options().setPrefix("/cookie_needed_echo").setMaxBytesStreaming(4096).setInsertJSESSIONID(true),
+    installApp(new SockJSServerOptions().setPrefix("/cookie_needed_echo").setMaxBytesStreaming(4096).setInsertJSESSIONID(true),
       sock -> sock.handler(sock::write));
   }
 
