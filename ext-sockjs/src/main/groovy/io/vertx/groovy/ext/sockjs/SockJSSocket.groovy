@@ -18,9 +18,9 @@ package io.vertx.groovy.ext.sockjs;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
 import io.vertx.groovy.core.buffer.Buffer
-import io.vertx.groovy.core.Headers
 import io.vertx.groovy.core.streams.WriteStream
 import io.vertx.groovy.core.streams.ReadStream
+import io.vertx.groovy.core.MultiMap
 import io.vertx.core.Handler
 import io.vertx.groovy.core.net.SocketAddress
 /**
@@ -77,8 +77,8 @@ public class SockJSSocket implements ReadStream<SockJSSocket,Buffer>,  WriteStre
    * Return the headers corresponding to the last request for this socket or the websocket handshake
    * Any cookie headers will be removed for security reasons
    */
-  public Headers headers() {
-    def ret= new Headers(this.delegate.headers());
+  public MultiMap headers() {
+    def ret= new MultiMap(this.delegate.headers());
     return ret;
   }
   /**

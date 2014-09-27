@@ -15,10 +15,10 @@
  */
 
 var utils = require('vertx-js/util/utils');
-var Headers = require('vertx-js/headers');
 var Buffer = require('vertx-js/buffer');
 var WriteStream = require('vertx-js/write_stream');
 var ReadStream = require('vertx-js/read_stream');
+var MultiMap = require('vertx-js/multi_map');
 var SocketAddress = require('vertx-js/socket_address');
 
 var io = Packages.io;
@@ -88,7 +88,7 @@ var SockJSSocket = function(j_val) {
   this.headers = function() {
     var __args = arguments;
     if (__args.length === 0) {
-      return new Headers(j_sockJSSocket.headers());
+      return new MultiMap(j_sockJSSocket.headers());
     } else utils.invalidArgs();
   };
 

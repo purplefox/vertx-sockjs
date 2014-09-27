@@ -17,7 +17,7 @@
 package io.vertx.ext.sockjs;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.Headers;
+import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.streams.ReadStream;
@@ -64,7 +64,7 @@ public interface SockJSSocket extends ReadStream<SockJSSocket, Buffer>, WriteStr
    * Return the headers corresponding to the last request for this socket or the websocket handshake
    * Any cookie headers will be removed for security reasons
    */
-  Headers headers();
+  MultiMap headers();
 
   /**
    * Return the URI corresponding to the last request for this socket or the websocket handshake
