@@ -34,13 +34,53 @@ import io.vertx.groovy.core.net.SocketAddress
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 @CompileStatic
-public class SockJSSocket implements ReadStream<SockJSSocket,Buffer>,  WriteStream<SockJSSocket,Buffer> {
+public class SockJSSocket implements ReadStream<Buffer>,  WriteStream<Buffer> {
   final def io.vertx.ext.sockjs.SockJSSocket delegate;
   public SockJSSocket(io.vertx.ext.sockjs.SockJSSocket delegate) {
     this.delegate = delegate;
   }
-  public io.vertx.ext.sockjs.SockJSSocket getDelegate() {
+  public Object getDelegate() {
     return delegate;
+  }
+  public boolean writeQueueFull() {
+    def ret = ((io.vertx.core.streams.WriteStream) this.delegate).writeQueueFull();
+    return ret;
+  }
+  public SockJSSocket exceptionHandler(Handler<Throwable> handler) {
+    this.delegate.exceptionHandler(handler);
+    return this;
+  }
+  public SockJSSocket handler(Handler<Buffer> handler) {
+    this.delegate.handler(new Handler<io.vertx.core.buffer.Buffer>() {
+      public void handle(io.vertx.core.buffer.Buffer event) {
+        handler.handle(Buffer.FACTORY.apply(event));
+      }
+    });
+    return this;
+  }
+  public SockJSSocket pause() {
+    this.delegate.pause();
+    return this;
+  }
+  public SockJSSocket resume() {
+    this.delegate.resume();
+    return this;
+  }
+  public SockJSSocket endHandler(Handler<Void> endHandler) {
+    this.delegate.endHandler(endHandler);
+    return this;
+  }
+  public SockJSSocket write(Buffer data) {
+    this.delegate.write((io.vertx.core.buffer.Buffer)data.getDelegate());
+    return this;
+  }
+  public SockJSSocket setWriteQueueMaxSize(int maxSize) {
+    this.delegate.setWriteQueueMaxSize(maxSize);
+    return this;
+  }
+  public SockJSSocket drainHandler(Handler<Void> handler) {
+    this.delegate.drainHandler(handler);
+    return this;
   }
   /**
    * When a {@code SockJSSocket} is created it automatically registers an event handler with the event bus, the ID of that
@@ -63,14 +103,14 @@ public class SockJSSocket implements ReadStream<SockJSSocket,Buffer>,  WriteStre
    * Return the remote address for this socket
    */
   public SocketAddress remoteAddress() {
-    def ret= new SocketAddress(this.delegate.remoteAddress());
+    def ret= SocketAddress.FACTORY.apply(this.delegate.remoteAddress());
     return ret;
   }
   /**
    * Return the local address for this socket
    */
   public SocketAddress localAddress() {
-    def ret= new SocketAddress(this.delegate.localAddress());
+    def ret= SocketAddress.FACTORY.apply(this.delegate.localAddress());
     return ret;
   }
   /**
@@ -78,7 +118,7 @@ public class SockJSSocket implements ReadStream<SockJSSocket,Buffer>,  WriteStre
    * Any cookie headers will be removed for security reasons
    */
   public MultiMap headers() {
-    def ret= new MultiMap(this.delegate.headers());
+    def ret= MultiMap.FACTORY.apply(this.delegate.headers());
     return ret;
   }
   /**
@@ -88,44 +128,8 @@ public class SockJSSocket implements ReadStream<SockJSSocket,Buffer>,  WriteStre
     def ret = this.delegate.uri();
     return ret;
   }
-  public SockJSSocket handler(Handler<Buffer> arg0) {
-    ((io.vertx.core.streams.ReadStream) this.delegate).handler(new Handler<io.vertx.core.buffer.Buffer>() {
-      public void handle(io.vertx.core.buffer.Buffer event) {
-        arg0.handle(new Buffer(event));
-      }
-    });
-    return this;
-  }
-  public SockJSSocket pause() {
-    ((io.vertx.core.streams.ReadStream) this.delegate).pause();
-    return this;
-  }
-  public SockJSSocket resume() {
-    ((io.vertx.core.streams.ReadStream) this.delegate).resume();
-    return this;
-  }
-  public SockJSSocket endHandler(Handler<Void> arg0) {
-    ((io.vertx.core.streams.ReadStream) this.delegate).endHandler(arg0);
-    return this;
-  }
-  public SockJSSocket exceptionHandler(Handler<Throwable> arg0) {
-    ((io.vertx.core.streams.StreamBase) this.delegate).exceptionHandler(arg0);
-    return this;
-  }
-  public SockJSSocket write(Buffer arg0) {
-    ((io.vertx.core.streams.WriteStream) this.delegate).write(arg0.getDelegate());
-    return this;
-  }
-  public SockJSSocket setWriteQueueMaxSize(int arg0) {
-    ((io.vertx.core.streams.WriteStream) this.delegate).setWriteQueueMaxSize(arg0);
-    return this;
-  }
-  public boolean writeQueueFull() {
-    def ret = ((io.vertx.core.streams.WriteStream) this.delegate).writeQueueFull();
-    return ret;
-  }
-  public SockJSSocket drainHandler(Handler<Void> arg0) {
-    ((io.vertx.core.streams.WriteStream) this.delegate).drainHandler(arg0);
-    return this;
-  }
+
+  static final java.util.function.Function<io.vertx.ext.sockjs.SockJSSocket, SockJSSocket> FACTORY = io.vertx.lang.groovy.Factories.createFactory() {
+    io.vertx.ext.sockjs.SockJSSocket arg -> new SockJSSocket(arg);
+  };
 }

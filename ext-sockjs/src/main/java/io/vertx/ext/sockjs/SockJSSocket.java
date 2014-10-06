@@ -17,6 +17,7 @@
 package io.vertx.ext.sockjs;
 
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.SocketAddress;
@@ -34,7 +35,31 @@ import io.vertx.core.streams.WriteStream;
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 @VertxGen
-public interface SockJSSocket extends ReadStream<SockJSSocket, Buffer>, WriteStream<SockJSSocket, Buffer> {
+public interface SockJSSocket extends ReadStream<Buffer>, WriteStream<Buffer> {
+
+  @Override
+  SockJSSocket exceptionHandler(Handler<Throwable> handler);
+
+  @Override
+  SockJSSocket handler(Handler<Buffer> handler);
+
+  @Override
+  SockJSSocket pause();
+
+  @Override
+  SockJSSocket resume();
+
+  @Override
+  SockJSSocket endHandler(Handler<Void> endHandler);
+
+  @Override
+  SockJSSocket write(Buffer data);
+
+  @Override
+  SockJSSocket setWriteQueueMaxSize(int maxSize);
+
+  @Override
+  SockJSSocket drainHandler(Handler<Void> handler);
 
   /**
    * When a {@code SockJSSocket} is created it automatically registers an event handler with the event bus, the ID of that

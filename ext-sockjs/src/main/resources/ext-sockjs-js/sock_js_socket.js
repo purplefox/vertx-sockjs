@@ -37,6 +37,81 @@ var SockJSSocket = function(j_val) {
   ReadStream.call(this, j_val);
   WriteStream.call(this, j_val);
 
+  this.writeQueueFull = function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      return j_sockJSSocket.writeQueueFull();
+    } else utils.invalidArgs();
+  };
+
+  this.exceptionHandler = function(handler) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'function') {
+      j_sockJSSocket.exceptionHandler(function(jVal) {
+      handler(new Throwable(jVal));
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  this.handler = function(handler) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'function') {
+      j_sockJSSocket.handler(function(jVal) {
+      handler(new Buffer(jVal));
+    });
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  this.pause = function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      j_sockJSSocket.pause();
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  this.resume = function() {
+    var __args = arguments;
+    if (__args.length === 0) {
+      j_sockJSSocket.resume();
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  this.endHandler = function(endHandler) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'function') {
+      j_sockJSSocket.endHandler(endHandler);
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  this.write = function(data) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'object' && __args[0]._vertxgen) {
+      j_sockJSSocket.write(data._jdel());
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  this.setWriteQueueMaxSize = function(maxSize) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] ==='number') {
+      j_sockJSSocket.setWriteQueueMaxSize(maxSize);
+      return that;
+    } else utils.invalidArgs();
+  };
+
+  this.drainHandler = function(handler) {
+    var __args = arguments;
+    if (__args.length === 1 && typeof __args[0] === 'function') {
+      j_sockJSSocket.drainHandler(handler);
+      return that;
+    } else utils.invalidArgs();
+  };
+
   /*
   
   */
@@ -100,81 +175,6 @@ var SockJSSocket = function(j_val) {
     var __args = arguments;
     if (__args.length === 0) {
       return j_sockJSSocket.uri();
-    } else utils.invalidArgs();
-  };
-
-  this.handler = function(arg0) {
-    var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] === 'function') {
-      j_sockJSSocket.handler(function(jVal) {
-      arg0(new Buffer(jVal));
-    });
-      return that;
-    } else utils.invalidArgs();
-  };
-
-  this.pause = function() {
-    var __args = arguments;
-    if (__args.length === 0) {
-      j_sockJSSocket.pause();
-      return that;
-    } else utils.invalidArgs();
-  };
-
-  this.resume = function() {
-    var __args = arguments;
-    if (__args.length === 0) {
-      j_sockJSSocket.resume();
-      return that;
-    } else utils.invalidArgs();
-  };
-
-  this.endHandler = function(arg0) {
-    var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] === 'function') {
-      j_sockJSSocket.endHandler(arg0);
-      return that;
-    } else utils.invalidArgs();
-  };
-
-  this.exceptionHandler = function(arg0) {
-    var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] === 'function') {
-      j_sockJSSocket.exceptionHandler(function(jVal) {
-      arg0(new Throwable(jVal));
-    });
-      return that;
-    } else utils.invalidArgs();
-  };
-
-  this.write = function(arg0) {
-    var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] === 'object' && __args[0]._vertxgen) {
-      j_sockJSSocket.write(arg0._jdel());
-      return that;
-    } else utils.invalidArgs();
-  };
-
-  this.setWriteQueueMaxSize = function(arg0) {
-    var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] ==='number') {
-      j_sockJSSocket.setWriteQueueMaxSize(arg0);
-      return that;
-    } else utils.invalidArgs();
-  };
-
-  this.writeQueueFull = function() {
-    var __args = arguments;
-    if (__args.length === 0) {
-      return j_sockJSSocket.writeQueueFull();
-    } else utils.invalidArgs();
-  };
-
-  this.drainHandler = function(arg0) {
-    var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] === 'function') {
-      j_sockJSSocket.drainHandler(arg0);
-      return that;
     } else utils.invalidArgs();
   };
 

@@ -31,17 +31,17 @@ public class SockJSServer {
   public SockJSServer(io.vertx.ext.sockjs.SockJSServer delegate) {
     this.delegate = delegate;
   }
-  public io.vertx.ext.sockjs.SockJSServer getDelegate() {
+  public Object getDelegate() {
     return delegate;
   }
   public static SockJSServer sockJSServer(Vertx vertx, HttpServer httpServer) {
-    def ret= new SockJSServer(io.vertx.ext.sockjs.SockJSServer.sockJSServer(vertx.getDelegate(), httpServer.getDelegate()));
+    def ret= SockJSServer.FACTORY.apply(io.vertx.ext.sockjs.SockJSServer.sockJSServer((io.vertx.core.Vertx)vertx.getDelegate(), (io.vertx.core.http.HttpServer)httpServer.getDelegate()));
     return ret;
   }
   public SockJSServer installApp(Map<String, Object> options = [:], Handler<SockJSSocket> sockHandler) {
     this.delegate.installApp(options != null ? new io.vertx.ext.sockjs.SockJSServerOptions(new io.vertx.core.json.JsonObject(options)) : null, new Handler<io.vertx.ext.sockjs.SockJSSocket>() {
       public void handle(io.vertx.ext.sockjs.SockJSSocket event) {
-        sockHandler.handle(new SockJSSocket(event));
+        sockHandler.handle(SockJSSocket.FACTORY.apply(event));
       }
     });
     return this;
@@ -56,4 +56,8 @@ public class SockJSServer {
   public void installTestApplications() {
     this.delegate.installTestApplications();
   }
+
+  static final java.util.function.Function<io.vertx.ext.sockjs.SockJSServer, SockJSServer> FACTORY = io.vertx.lang.groovy.Factories.createFactory() {
+    io.vertx.ext.sockjs.SockJSServer arg -> new SockJSServer(arg);
+  };
 }
