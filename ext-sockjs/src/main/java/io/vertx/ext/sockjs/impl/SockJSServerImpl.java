@@ -20,6 +20,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VoidHandler;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -123,7 +124,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
 
     // Base handler for app
 
-    rm.getWithRegEx(prefix + "\\/?", new Handler<HttpServerRequest>() {
+    rm.matchMethodWithRegEx(HttpMethod.GET, prefix + "\\/?", new Handler<HttpServerRequest>() {
       public void handle(HttpServerRequest req) {
         if (log.isTraceEnabled()) log.trace("Returning welcome response");
         req.response().headers().set("Content-Type", "text/plain; charset=UTF-8");
@@ -136,18 +137,18 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
     Handler<HttpServerRequest> iframeHandler = createIFrameHandler(iframeHTML);
 
     // Request exactly for iframe.html
-    rm.getWithRegEx(prefix + "\\/iframe\\.html", iframeHandler);
+    rm.matchMethodWithRegEx(HttpMethod.GET, prefix + "\\/iframe\\.html", iframeHandler);
 
     // Versioned
-    rm.getWithRegEx(prefix + "\\/iframe-[^\\/]*\\.html", iframeHandler);
+    rm.matchMethodWithRegEx(HttpMethod.GET, prefix + "\\/iframe-[^\\/]*\\.html", iframeHandler);
 
     // Chunking test
-    rm.postWithRegEx(prefix + "\\/chunking_test", createChunkingTestHandler());
-    rm.optionsWithRegEx(prefix + "\\/chunking_test", BaseTransport.createCORSOptionsHandler(options, "OPTIONS, POST"));
+    rm.matchMethodWithRegEx(HttpMethod.POST, prefix + "\\/chunking_test", createChunkingTestHandler());
+    rm.matchMethodWithRegEx(HttpMethod.OPTIONS, prefix + "\\/chunking_test", BaseTransport.createCORSOptionsHandler(options, "OPTIONS, POST"));
 
     // Info
-    rm.getWithRegEx(prefix + "\\/info", BaseTransport.createInfoHandler(options));
-    rm.optionsWithRegEx(prefix + "\\/info", BaseTransport.createCORSOptionsHandler(options, "OPTIONS, GET"));
+    rm.matchMethodWithRegEx(HttpMethod.GET, prefix + "\\/info", BaseTransport.createInfoHandler(options));
+    rm.matchMethodWithRegEx(HttpMethod.OPTIONS, prefix + "\\/info", BaseTransport.createCORSOptionsHandler(options, "OPTIONS, GET"));
 
     // Transports
 
@@ -181,7 +182,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
     }
     // Catch all for any other requests on this app
 
-    rm.getWithRegEx(prefix + "\\/.+", new Handler<HttpServerRequest>() {
+    rm.matchMethodWithRegEx(HttpMethod.GET, prefix + "\\/.+", new Handler<HttpServerRequest>() {
       public void handle(HttpServerRequest req) {
         if (log.isTraceEnabled()) log.trace("Request: " + req.uri() + " does not match, returning 404");
         req.response().setStatusCode(404);
@@ -226,11 +227,9 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
       private void nextTimeout(List<TimeoutInfo> timeouts, Iterator<TimeoutInfo> iter, HttpServerResponse response) {
         if (iter.hasNext()) {
           TimeoutInfo timeout = iter.next();
-          vertx.setTimer(timeout.timeout, new Handler<Long>() {
-            public void handle(Long id) {
-              response.write(timeout.buff);
-              nextTimeout(timeouts, iter, response);
-            }
+          vertx.setTimer(timeout.timeout, id -> {
+            response.write(timeout.buff);
+            nextTimeout(timeouts, iter, response);
           });
         } else {
           timeouts.clear();
@@ -270,25 +269,23 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
 
   private Handler<HttpServerRequest> createIFrameHandler(String iframeHTML) {
     String etag = getMD5String(iframeHTML);
-    return new Handler<HttpServerRequest>() {
-      public void handle(HttpServerRequest req) {
-        try {
-          if (log.isTraceEnabled()) log.trace("In Iframe handler");
-          if (etag != null && etag.equals(req.headers().get("if-none-match"))) {
-            req.response().setStatusCode(304);
-            req.response().end();
-          } else {
-            req.response().headers().set("Content-Type", "text/html; charset=UTF-8");
-            req.response().headers().set("Cache-Control", "public,max-age=31536000");
-            long oneYear = 365 * 24 * 60 * 60 * 1000;
-            String expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(new Date(System.currentTimeMillis() + oneYear));
-            req.response().headers().set("Expires", expires);
-            req.response().headers().set("ETag", etag);
-            req.response().end(iframeHTML);
-          }
-        } catch (Exception e) {
-          log.error("Failed to server iframe", e);
+    return req -> {
+      try {
+        if (log.isTraceEnabled()) log.trace("In Iframe handler");
+        if (etag != null && etag.equals(req.headers().get("if-none-match"))) {
+          req.response().setStatusCode(304);
+          req.response().end();
+        } else {
+          req.response().headers().set("Content-Type", "text/html; charset=UTF-8");
+          req.response().headers().set("Cache-Control", "public,max-age=31536000");
+          long oneYear = 365 * 24 * 60 * 60 * 1000;
+          String expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(new Date(System.currentTimeMillis() + oneYear));
+          req.response().headers().set("Expires", expires);
+          req.response().headers().set("ETag", etag);
+          req.response().end(iframeHTML);
         }
+      } catch (Exception e) {
+        log.error("Failed to server iframe", e);
       }
     };
   }
@@ -308,7 +305,6 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
         return null;
     }
   }
-
 
   private static String IFRAME_TEMPLATE =
       "<!DOCTYPE html>\n" +

@@ -18,6 +18,7 @@ package io.vertx.ext.sockjs.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
+import io.vertx.ext.sockjs.SockJSServer;
 import io.vertx.ext.sockjs.spi.SockJSServerFactory;
 
 /**
@@ -26,7 +27,7 @@ import io.vertx.ext.sockjs.spi.SockJSServerFactory;
 public class SockJSServerFactoryImpl implements SockJSServerFactory {
 
   @Override
-  public SockJSServerImpl sockJSServer(Vertx vertx, HttpServer httpServer) {
+  public SockJSServer sockJSServer(Vertx vertx, HttpServer httpServer) {
     return new SockJSServerImpl(vertx, httpServer);
   }
 }

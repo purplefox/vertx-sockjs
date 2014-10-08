@@ -19,6 +19,7 @@ package io.vertx.ext.sockjs.impl;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -36,27 +37,24 @@ class EventSourceTransport extends BaseTransport {
 
   private static final Logger log = LoggerFactory.getLogger(EventSourceTransport.class);
 
-  EventSourceTransport(Vertx vertx,RouteMatcher rm, String basePath, LocalMap<String, Session> sessions, final SockJSServerOptions options,
-            final Handler<SockJSSocket> sockHandler) {
+  EventSourceTransport(Vertx vertx,RouteMatcher rm, String basePath, LocalMap<String, Session> sessions, SockJSServerOptions options,
+                       Handler<SockJSSocket> sockHandler) {
     super(vertx, sessions, options);
 
     String eventSourceRE = basePath + COMMON_PATH_ELEMENT_RE + "eventsource";
 
-    rm.getWithRegEx(eventSourceRE, new Handler<HttpServerRequest>() {
-      public void handle(final HttpServerRequest req) {
-        if (log.isTraceEnabled()) log.trace("EventSource transport, get: " + req.uri());
-        String sessionID = req.params().get("param0");
-        Session session = getSession(options.getSessionTimeout(), options.getHeartbeatPeriod(), sessionID, sockHandler);
-        session.setInfo(req.localAddress(), req.remoteAddress(), req.uri(), req.headers());
-        session.register(new EventSourceListener(options.getMaxBytesStreaming(), req, session));
-      }
+    rm.matchMethodWithRegEx(HttpMethod.GET, eventSourceRE, req -> {
+      if (log.isTraceEnabled()) log.trace("EventSource transport, get: " + req.uri());
+      String sessionID = req.params().get("param0");
+      Session session = getSession(options.getSessionTimeout(), options.getHeartbeatPeriod(), sessionID, sockHandler);
+      session.setInfo(req.localAddress(), req.remoteAddress(), req.uri(), req.headers());
+      session.register(new EventSourceListener(options.getMaxBytesStreaming(), req, session));
     });
   }
 
   private class EventSourceListener extends BaseListener {
 
     final int maxBytesStreaming;
-
     boolean headersWritten;
     int bytesSent;
     boolean closed;

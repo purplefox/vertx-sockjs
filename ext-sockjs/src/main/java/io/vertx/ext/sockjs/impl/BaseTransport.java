@@ -57,7 +57,7 @@ class BaseTransport {
     this.options = options;
   }
 
-  protected Session getSession(final long timeout, final long heartbeatPeriod, final String sessionID,
+  protected Session getSession(long timeout, long heartbeatPeriod, String sessionID,
                                Handler<SockJSSocket> sockHandler) {
     Session session = sessions.get(sessionID);
     if (session == null) {
@@ -173,22 +173,20 @@ class BaseTransport {
     req.response().headers().set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
   }
 
-  static Handler<HttpServerRequest> createCORSOptionsHandler(final SockJSServerOptions options, final String methods) {
-    return new Handler<HttpServerRequest>() {
-      public void handle(HttpServerRequest req) {
-        if (log.isTraceEnabled()) log.trace("In CORS options handler");
-        req.response().headers().set("Cache-Control", "public,max-age=31536000");
-        long oneYearSeconds = 365 * 24 * 60 * 60;
-        long oneYearms = oneYearSeconds * 1000;
-        String expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(new Date(System.currentTimeMillis() + oneYearms));
-        req.response().headers().set("Expires", expires);
-        req.response().headers().set("Access-Control-Allow-Methods", methods);
-        req.response().headers().set("Access-Control-Max-Age", String.valueOf(oneYearSeconds));
-        setCORS(req);
-        setJSESSIONID(options, req);
-        req.response().setStatusCode(204);
-        req.response().end();
-      }
+  static Handler<HttpServerRequest> createCORSOptionsHandler(SockJSServerOptions options, String methods) {
+    return req -> {
+      if (log.isTraceEnabled()) log.trace("In CORS options handler");
+      req.response().headers().set("Cache-Control", "public,max-age=31536000");
+      long oneYearSeconds = 365 * 24 * 60 * 60;
+      long oneYearms = oneYearSeconds * 1000;
+      String expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz").format(new Date(System.currentTimeMillis() + oneYearms));
+      req.response().headers().set("Expires", expires);
+      req.response().headers().set("Access-Control-Allow-Methods", methods);
+      req.response().headers().set("Access-Control-Max-Age", String.valueOf(oneYearSeconds));
+      setCORS(req);
+      setJSESSIONID(options, req);
+      req.response().setStatusCode(204);
+      req.response().end();
     };
   }
 

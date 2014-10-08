@@ -19,6 +19,7 @@ package io.vertx.ext.sockjs.impl;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -47,8 +48,8 @@ class XhrTransport extends BaseTransport {
     H_BLOCK = buffer(bytes);
   }
 
-  XhrTransport(Vertx vertx, RouteMatcher rm, String basePath, final LocalMap<String, Session> sessions, final SockJSServerOptions options,
-            final Handler<SockJSSocket> sockHandler) {
+  XhrTransport(Vertx vertx, RouteMatcher rm, String basePath, LocalMap<String, Session> sessions, SockJSServerOptions options,
+               Handler<SockJSSocket> sockHandler) {
 
     super(vertx, sessions, options);
 
@@ -58,68 +59,61 @@ class XhrTransport extends BaseTransport {
 
     Handler<HttpServerRequest> xhrOptionsHandler = createCORSOptionsHandler(options, "OPTIONS, POST");
 
-    rm.optionsWithRegEx(xhrRE, xhrOptionsHandler);
-    rm.optionsWithRegEx(xhrStreamRE, xhrOptionsHandler);
+    rm.matchMethodWithRegEx(HttpMethod.OPTIONS, xhrRE, xhrOptionsHandler);
+    rm.matchMethodWithRegEx(HttpMethod.OPTIONS, xhrStreamRE, xhrOptionsHandler);
 
     registerHandler(rm, sockHandler, xhrRE, false, options);
     registerHandler(rm, sockHandler, xhrStreamRE, true, options);
 
     String xhrSendRE = basePath + COMMON_PATH_ELEMENT_RE + "xhr_send";
 
-    rm.optionsWithRegEx(xhrSendRE, xhrOptionsHandler);
+    rm.matchMethodWithRegEx(HttpMethod.OPTIONS, xhrSendRE, xhrOptionsHandler);
 
-    rm.postWithRegEx(xhrSendRE, new Handler<HttpServerRequest>() {
-      public void handle(final HttpServerRequest req) {
-        if (log.isTraceEnabled()) log.trace("XHR send, post, " + req.uri());
-        String sessionID = req.params().get("param0");
-        final Session session = sessions.get(sessionID);
-        if (session != null && !session.isClosed()) {
-          handleSend(req, session);
-        } else {
-          req.response().setStatusCode(404);
-          setJSESSIONID(options, req);
-          req.response().end();
-        }
+    rm.matchMethodWithRegEx(HttpMethod.POST, xhrSendRE, req -> {
+      if (log.isTraceEnabled()) log.trace("XHR send, post, " + req.uri());
+      String sessionID = req.params().get("param0");
+      final Session session = sessions.get(sessionID);
+      if (session != null && !session.isClosed()) {
+        handleSend(req, session);
+      } else {
+        req.response().setStatusCode(404);
+        setJSESSIONID(options, req);
+        req.response().end();
       }
     });
   }
 
-  private void registerHandler(RouteMatcher rm, final Handler<SockJSSocket> sockHandler, String re,
-                               final boolean streaming, final SockJSServerOptions options) {
-    rm.postWithRegEx(re, new Handler<HttpServerRequest>() {
-      public void handle(final HttpServerRequest req) {
-        if (log.isTraceEnabled()) log.trace("XHR, post, " + req.uri());
+  private void registerHandler(RouteMatcher rm, Handler<SockJSSocket> sockHandler, String re,
+                               boolean streaming, SockJSServerOptions options) {
+    rm.matchMethodWithRegEx(HttpMethod.POST, re, req -> {
+      if (log.isTraceEnabled()) log.trace("XHR, post, " + req.uri());
+      setNoCacheHeaders(req);
+      String sessionID = req.params().get("param0");
+      Session session = getSession(options.getSessionTimeout(), options.getHeartbeatPeriod(), sessionID, sockHandler);
+      session.setInfo(req.localAddress(), req.remoteAddress(), req.uri(), req.headers());
+      session.register(streaming? new XhrStreamingListener(options.getMaxBytesStreaming(), req, session) : new XhrPollingListener(req, session));
+    });
+  }
+
+  private void handleSend(HttpServerRequest req, Session session) {
+    req.bodyHandler(buff -> {
+      String msgs = buff.toString();
+      if (msgs.equals("")) {
+        req.response().setStatusCode(500);
+        req.response().end("Payload expected.");
+        return;
+      }
+      if (!session.handleMessages(msgs)) {
+        sendInvalidJSON(req.response());
+      } else {
+        req.response().headers().set("Content-Type", "text/plain; charset=UTF-8");
         setNoCacheHeaders(req);
-        String sessionID = req.params().get("param0");
-        Session session = getSession(options.getSessionTimeout(), options.getHeartbeatPeriod(), sessionID, sockHandler);
-        session.setInfo(req.localAddress(), req.remoteAddress(), req.uri(), req.headers());
-        session.register(streaming? new XhrStreamingListener(options.getMaxBytesStreaming(), req, session) : new XhrPollingListener(req, session));
+        setJSESSIONID(options, req);
+        setCORS(req);
+        req.response().setStatusCode(204);
+        req.response().end();
       }
-    });
-  }
-
-  private void handleSend(final HttpServerRequest req, final Session session) {
-
-    req.bodyHandler(new Handler<Buffer>() {
-      public void handle(Buffer buff) {
-        String msgs = buff.toString();
-        if (msgs.equals("")) {
-          req.response().setStatusCode(500);
-          req.response().end("Payload expected.");
-          return;
-        }
-        if (!session.handleMessages(msgs)) {
-          sendInvalidJSON(req.response());
-        } else {
-          req.response().headers().set("Content-Type", "text/plain; charset=UTF-8");
-          setNoCacheHeaders(req);
-          setJSESSIONID(options, req);
-          setCORS(req);
-          req.response().setStatusCode(204);
-          req.response().end();
-        }
-        if (log.isTraceEnabled()) log.trace("XHR send processed ok");
-      }
+      if (log.isTraceEnabled()) log.trace("XHR send processed ok");
     });
   }
 
@@ -148,7 +142,7 @@ class XhrTransport extends BaseTransport {
 
   private class XhrPollingListener extends BaseXhrListener {
 
-    XhrPollingListener(HttpServerRequest req, final Session session) {
+    XhrPollingListener(HttpServerRequest req, Session session) {
       super(req, session);
       addCloseHandler(req.response(), session);
     }
@@ -179,7 +173,7 @@ class XhrTransport extends BaseTransport {
     int bytesSent;
     int maxBytesStreaming;
 
-    XhrStreamingListener(int maxBytesStreaming, HttpServerRequest req, final Session session) {
+    XhrStreamingListener(int maxBytesStreaming, HttpServerRequest req, Session session) {
       super(req, session);
       this.maxBytesStreaming = maxBytesStreaming;
       addCloseHandler(req.response(), session);
@@ -214,7 +208,5 @@ class XhrTransport extends BaseTransport {
       }
     }
   }
-
-
 
 }

@@ -18,12 +18,12 @@ package io.vertx.ext.sockjs.spi;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
-import io.vertx.ext.sockjs.impl.SockJSServerImpl;
+import io.vertx.ext.sockjs.SockJSServer;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public interface SockJSServerFactory {
 
-  SockJSServerImpl sockJSServer(Vertx vertx, HttpServer httpServer);
+  SockJSServer sockJSServer(Vertx vertx, HttpServer httpServer);
 }

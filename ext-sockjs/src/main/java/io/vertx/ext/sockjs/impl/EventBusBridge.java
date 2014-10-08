@@ -26,7 +26,6 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.ReplyException;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -76,17 +75,6 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     Set<String> sockAuths;
     int handlerCount;
     PingInfo pingInfo;
-  }
-
-  private static List<JsonObject> convertArray(JsonArray permitted) {
-    List<JsonObject> l = new ArrayList<>();
-    for (Object elem: permitted) {
-      if (!(elem instanceof JsonObject)) {
-        throw new IllegalArgumentException("Permitted must only contain JsonObject: " + elem);
-      }
-      l.add((JsonObject) elem);
-    }
-    return l;
   }
 
   public EventBusBridge(Vertx vertx, BridgeOptions options) {
@@ -174,7 +162,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     }
   }
 
-  private void internalHandleRegister(final SockJSSocket sock, JsonObject message, final String address, Map<String, MessageConsumer> registrations) {
+  private void internalHandleRegister(SockJSSocket sock, JsonObject message, String address, Map<String, MessageConsumer> registrations) {
     if (address.length() > maxAddressLength) {
       log.error("Refusing to register as address length > max_address_length");
       return;
@@ -280,22 +268,6 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     return value;
   }
 
-  private static JsonObject getMandatoryObject(JsonObject json, String field) {
-    JsonObject value = json.getObject(field);
-    if (value == null) {
-      throw new IllegalStateException(field + " must be specified for message");
-    }
-    return value;
-  }
-
-  private static Object getMandatoryValue(JsonObject json, String field) {
-    Object value = json.getValue(field);
-    if (value == null) {
-      throw new IllegalStateException(field + " must be specified for message");
-    }
-    return value;
-  }
-
   private static void deliverMessage(SockJSSocket sock, String address, Message message) {
     JsonObject envelope = new JsonObject().putString("address", address).putValue("body", message.body());
     if (message.replyAddress() != null) {
@@ -304,8 +276,8 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     sock.write(buffer(envelope.encode()));
   }
 
-  private void doSendOrPub(final boolean send, final SockJSSocket sock, final String address,
-                           final JsonObject message) {
+  private void doSendOrPub(boolean send, SockJSSocket sock, String address,
+                           JsonObject message) {
     final Object body = message.getValue("body");
     final String replyAddress = message.getString("replyAddress");
     // Sanity check reply address is not too big, to avoid DoS
@@ -359,9 +331,9 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     }
   }
 
-  private void checkAndSend(boolean send, final String address, Object body,
-                            final SockJSSocket sock,
-                            final String replyAddress) {
+  private void checkAndSend(boolean send, String address, Object body,
+                            SockJSSocket sock,
+                            String replyAddress) {
     final SockInfo info = sockInfos.get(sock);
     if (replyAddress != null && !checkMaxHandlers(info)) {
       return;
@@ -402,8 +374,8 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     }
   }
 
-  private void authorise(final JsonObject message, final String sessionID,
-                           final Handler<AsyncResult<Boolean>> handler) {
+  private void authorise(JsonObject message, String sessionID,
+                         Handler<AsyncResult<Boolean>> handler) {
     if (!handleAuthorise(message, sessionID, handler)) {
       // If session id is in local cache we'll consider them authorised
       if (authCache.containsKey(sessionID)) {

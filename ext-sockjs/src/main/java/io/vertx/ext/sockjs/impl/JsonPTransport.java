@@ -18,7 +18,7 @@ package io.vertx.ext.sockjs.impl;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -37,92 +37,85 @@ class JsonPTransport extends BaseTransport {
 
   private static final Logger log = LoggerFactory.getLogger(JsonPTransport.class);
 
-  JsonPTransport(Vertx vertx, RouteMatcher rm, String basePath, final LocalMap<String, Session> sessions, final SockJSServerOptions options,
-            final Handler<SockJSSocket> sockHandler) {
+  JsonPTransport(Vertx vertx, RouteMatcher rm, String basePath, LocalMap<String, Session> sessions, SockJSServerOptions options,
+                 Handler<SockJSSocket> sockHandler) {
     super(vertx, sessions, options);
 
     String jsonpRE = basePath + COMMON_PATH_ELEMENT_RE + "jsonp";
 
-    rm.getWithRegEx(jsonpRE, new Handler<HttpServerRequest>() {
-      public void handle(final HttpServerRequest req) {
-        if (log.isTraceEnabled()) log.trace("JsonP, get: " + req.uri());
-        String callback = req.params().get("callback");
+    rm.matchMethodWithRegEx(HttpMethod.GET, jsonpRE, req -> {
+      if (log.isTraceEnabled()) log.trace("JsonP, get: " + req.uri());
+      String callback = req.params().get("callback");
+      if (callback == null) {
+        callback = req.params().get("c");
         if (callback == null) {
-          callback = req.params().get("c");
-          if (callback == null) {
-            req.response().setStatusCode(500);
-            req.response().end("\"callback\" parameter required\n");
-            return;
-          }
+          req.response().setStatusCode(500);
+          req.response().end("\"callback\" parameter required\n");
+          return;
         }
-
-        String sessionID = req.params().get("param0");
-        Session session = getSession(options.getSessionTimeout(), options.getHeartbeatPeriod(), sessionID, sockHandler);
-        session.setInfo(req.localAddress(), req.remoteAddress(), req.uri(), req.headers());
-        session.register(new JsonPListener(req, session, callback));
       }
+
+      String sessionID = req.params().get("param0");
+      Session session = getSession(options.getSessionTimeout(), options.getHeartbeatPeriod(), sessionID, sockHandler);
+      session.setInfo(req.localAddress(), req.remoteAddress(), req.uri(), req.headers());
+      session.register(new JsonPListener(req, session, callback));
     });
 
     String jsonpSendRE = basePath + COMMON_PATH_ELEMENT_RE + "jsonp_send";
 
-    rm.postWithRegEx(jsonpSendRE, new Handler<HttpServerRequest>() {
-      public void handle(final HttpServerRequest req) {
-        if (log.isTraceEnabled()) log.trace("JsonP, post: " + req.uri());
-        String sessionID = req.params().get("param0");
-        final Session session = sessions.get(sessionID);
-        if (session != null && !session.isClosed()) {
-          handleSend(req, session);
-        } else {
-          req.response().setStatusCode(404);
-          setJSESSIONID(options, req);
-          req.response().end();
-        }
+    rm.matchMethodWithRegEx(HttpMethod.POST, jsonpSendRE, req -> {
+      if (log.isTraceEnabled()) log.trace("JsonP, post: " + req.uri());
+      String sessionID = req.params().get("param0");
+      final Session session = sessions.get(sessionID);
+      if (session != null && !session.isClosed()) {
+        handleSend(req, session);
+      } else {
+        req.response().setStatusCode(404);
+        setJSESSIONID(options, req);
+        req.response().end();
       }
     });
   }
 
-  private void handleSend(final HttpServerRequest req, final Session session) {
-    req.bodyHandler(new Handler<Buffer>() {
+  private void handleSend(HttpServerRequest req, Session session) {
+    req.bodyHandler(buff -> {
+      String body = buff.toString();
 
-      public void handle(Buffer buff) {
-        String body = buff.toString();
+      boolean urlEncoded;
+      String ct = req.headers().get("content-type");
+      if ("application/x-www-form-urlencoded".equalsIgnoreCase(ct)) {
+        urlEncoded = true;
+      } else if ("text/plain".equalsIgnoreCase(ct)) {
+        urlEncoded = false;
+      } else {
+        req.response().setStatusCode(500);
+        req.response().end("Invalid Content-Type");
+        return;
+      }
 
-        boolean urlEncoded;
-        String ct = req.headers().get("content-type");
-        if ("application/x-www-form-urlencoded".equalsIgnoreCase(ct)) {
-          urlEncoded = true;
-        } else if ("text/plain".equalsIgnoreCase(ct)) {
-          urlEncoded = false;
-        } else {
-          req.response().setStatusCode(500);
-          req.response().end("Invalid Content-Type");
-          return;
+      if (body.equals("") || urlEncoded && (!body.startsWith("d=") || body.length() <= 2)) {
+        req.response().setStatusCode(500);
+        req.response().end("Payload expected.");
+        return;
+      }
+
+      if (urlEncoded) {
+        try {
+          body = URLDecoder.decode(body, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+          throw new IllegalStateException("No UTF-8!");
         }
+        body = body.substring(2);
+      }
 
-        if (body.equals("") || urlEncoded && (!body.startsWith("d=") || body.length() <= 2)) {
-          req.response().setStatusCode(500);
-          req.response().end("Payload expected.");
-          return;
-        }
-
-        if (urlEncoded) {
-          try {
-            body = URLDecoder.decode(body, "UTF-8");
-          } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("No UTF-8!");
-          }
-          body = body.substring(2);
-        }
-
-        if (!session.handleMessages(body)) {
-          sendInvalidJSON(req.response());
-        } else {
-          setJSESSIONID(options, req);
-          req.response().headers().set("Content-Type", "text/plain; charset=UTF-8");
-          setNoCacheHeaders(req);
-          req.response().end("ok");
-          if (log.isTraceEnabled()) log.trace("send handled ok");
-        }
+      if (!session.handleMessages(body)) {
+        sendInvalidJSON(req.response());
+      } else {
+        setJSESSIONID(options, req);
+        req.response().headers().set("Content-Type", "text/plain; charset=UTF-8");
+        setNoCacheHeaders(req);
+        req.response().end("ok");
+        if (log.isTraceEnabled()) log.trace("send handled ok");
       }
     });
   }

@@ -19,6 +19,7 @@ package io.vertx.ext.sockjs.impl;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -63,29 +64,27 @@ class HtmlFileTransport extends BaseTransport {
     HTML_FILE_TEMPLATE = sb.toString();
   }
 
-  HtmlFileTransport(Vertx vertx, RouteMatcher rm, String basePath, LocalMap<String, Session> sessions, final SockJSServerOptions options,
-            final Handler<SockJSSocket> sockHandler) {
+  HtmlFileTransport(Vertx vertx, RouteMatcher rm, String basePath, LocalMap<String, Session> sessions, SockJSServerOptions options,
+                    Handler<SockJSSocket> sockHandler) {
     super(vertx, sessions, options);
     String htmlFileRE = basePath + COMMON_PATH_ELEMENT_RE + "htmlfile";
 
-    rm.getWithRegEx(htmlFileRE, new Handler<HttpServerRequest>() {
-      public void handle(final HttpServerRequest req) {
-        if (log.isTraceEnabled()) log.trace("HtmlFile, get: " + req.uri());
-        String callback = req.params().get("callback");
+    rm.matchMethodWithRegEx(HttpMethod.GET, htmlFileRE, req -> {
+      if (log.isTraceEnabled()) log.trace("HtmlFile, get: " + req.uri());
+      String callback = req.params().get("callback");
+      if (callback == null) {
+        callback = req.params().get("c");
         if (callback == null) {
-          callback = req.params().get("c");
-          if (callback == null) {
-            req.response().setStatusCode(500);
-            req.response().end("\"callback\" parameter required\n");
-            return;
-          }
+          req.response().setStatusCode(500);
+          req.response().end("\"callback\" parameter required\n");
+          return;
         }
-
-        String sessionID = req.params().get("param0");
-        Session session = getSession(options.getSessionTimeout(), options.getHeartbeatPeriod(), sessionID, sockHandler);
-        session.setInfo(req.localAddress(), req.remoteAddress(), req.uri(), req.headers());
-        session.register(new HtmlFileListener(options.getMaxBytesStreaming(), req, callback, session));
       }
+
+      String sessionID = req.params().get("param0");
+      Session session = getSession(options.getSessionTimeout(), options.getHeartbeatPeriod(), sessionID, sockHandler);
+      session.setInfo(req.localAddress(), req.remoteAddress(), req.uri(), req.headers());
+      session.register(new HtmlFileListener(options.getMaxBytesStreaming(), req, callback, session));
     });
   }
 

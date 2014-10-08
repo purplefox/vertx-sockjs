@@ -18,7 +18,7 @@ package io.vertx.ext.sockjs.impl;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.WebSocketFrame;
 import io.vertx.core.http.impl.WebSocketMatcher;
@@ -36,38 +36,31 @@ class WebSocketTransport extends BaseTransport {
 
   private static final Logger log = LoggerFactory.getLogger(WebSocketTransport.class);
 
-  WebSocketTransport(final Vertx vertx, WebSocketMatcher wsMatcher,
-                     RouteMatcher rm, String basePath, final LocalMap<String, Session> sessions,
-                     final SockJSServerOptions options,
-            final Handler<SockJSSocket> sockHandler) {
+  WebSocketTransport(Vertx vertx, WebSocketMatcher wsMatcher,
+                     RouteMatcher rm, String basePath, LocalMap<String, Session> sessions,
+                     SockJSServerOptions options,
+                     Handler<SockJSSocket> sockHandler) {
     super(vertx, sessions, options);
     String wsRE = basePath + COMMON_PATH_ELEMENT_RE + "websocket";
 
-    wsMatcher.addRegEx(wsRE, new Handler<WebSocketMatcher.Match>() {
-
-      public void handle(final WebSocketMatcher.Match match) {
-        if (log.isTraceEnabled()) log.trace("WS, handler");
-        final Session session = new Session(vertx, sessions, options.getHeartbeatPeriod(), sockHandler);
-        session.setInfo(match.ws.localAddress(), match.ws.remoteAddress(), match.ws.uri(), match.ws.headers());
-        session.register(new WebSocketListener(match.ws, session));
-      }
+    wsMatcher.addRegEx(wsRE, match -> {
+      if (log.isTraceEnabled()) log.trace("WS, handler");
+      final Session session = new Session(vertx, sessions, options.getHeartbeatPeriod(), sockHandler);
+      session.setInfo(match.ws.localAddress(), match.ws.remoteAddress(), match.ws.uri(), match.ws.headers());
+      session.register(new WebSocketListener(match.ws, session));
     });
 
-    rm.getWithRegEx(wsRE, new Handler<HttpServerRequest>() {
-      public void handle(HttpServerRequest request) {
-        if (log.isTraceEnabled()) log.trace("WS, get: " + request.uri());
-        request.response().setStatusCode(400);
-        request.response().end("Can \"Upgrade\" only to \"WebSocket\".");
-      }
+    rm.matchMethodWithRegEx(HttpMethod.GET, wsRE, request -> {
+      if (log.isTraceEnabled()) log.trace("WS, get: " + request.uri());
+      request.response().setStatusCode(400);
+      request.response().end("Can \"Upgrade\" only to \"WebSocket\".");
     });
 
-    rm.allWithRegEx(wsRE, new Handler<HttpServerRequest>() {
-      public void handle(HttpServerRequest request) {
-        if (log.isTraceEnabled()) log.trace("WS, all: " + request.uri());
-        request.response().headers().set("Allow", "GET");
-        request.response().setStatusCode(405);
-        request.response().end();
-      }
+    rm.allWithRegEx(wsRE, request -> {
+      if (log.isTraceEnabled()) log.trace("WS, all: " + request.uri());
+      request.response().headers().set("Allow", "GET");
+      request.response().setStatusCode(405);
+      request.response().end();
     });
   }
 
@@ -77,7 +70,7 @@ class WebSocketTransport extends BaseTransport {
     final Session session;
     boolean closed;
 
-    WebSocketListener(final ServerWebSocket ws, final Session session) {
+    WebSocketListener(ServerWebSocket ws, Session session) {
       this.ws = ws;
       this.session = session;
       ws.handler(data -> {
@@ -102,7 +95,7 @@ class WebSocketTransport extends BaseTransport {
         closed = true;
         session.shutdown();
         session.handleException(t);
-        });
+      });
     }
 
     public void sendFrame(final String body) {
