@@ -20,7 +20,6 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.WebSocketConnectOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sockjs.BridgeOptions;
 import io.vertx.ext.sockjs.SockJSServer;
@@ -64,8 +63,7 @@ public class EventBusBridgeTest extends VertxTestBase {
     server.listen(ar -> {
       assertTrue(ar.succeeded());
       // We use raw websocket transport
-      WebSocketConnectOptions options = new WebSocketConnectOptions().setPort(HttpTestBase.DEFAULT_HTTP_PORT).setRequestURI("/eventbus/websocket");
-      client.connectWebsocket(options, ws -> {
+      client.connectWebsocket(HttpTestBase.DEFAULT_HTTP_PORT, HttpTestBase.DEFAULT_HTTP_HOST, "/eventbus/websocket", ws -> {
 
         // Register
         JsonObject msg = new JsonObject().putString("type", "register").putString("address", "someaddress");
