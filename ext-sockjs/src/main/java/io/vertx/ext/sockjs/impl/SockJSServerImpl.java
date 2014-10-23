@@ -63,7 +63,7 @@ public class SockJSServerImpl implements SockJSServer, Handler<HttpServerRequest
   private EventBusBridgeHook hook;
   private long timerID;
 
-  SockJSServerImpl(Vertx vertx, HttpServer httpServer) {
+  public SockJSServerImpl(Vertx vertx, HttpServer httpServer) {
     this.vertx = vertx;
     this.sessions = vertx.sharedData().getLocalMap("_vertx.sockjssessions");
     // Any previous request and websocket handlers will become default handlers
