@@ -20,10 +20,9 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
-import io.vertx.ext.sockjs.spi.SockJSServerFactory;
+import io.vertx.ext.sockjs.impl.SockJSServerImpl;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -32,7 +31,7 @@ import io.vertx.ext.sockjs.spi.SockJSServerFactory;
 public interface SockJSServer {
 
   static SockJSServer sockJSServer(Vertx vertx, HttpServer httpServer) {
-    return factory.sockJSServer(vertx, httpServer);
+    return new SockJSServerImpl(vertx, httpServer);
   }
 
   @GenIgnore
@@ -52,7 +51,5 @@ public interface SockJSServer {
   These applications are required by the SockJS protocol and QUnit tests
    */
   void installTestApplications();
-
-  static final SockJSServerFactory factory = ServiceHelper.loadFactory(SockJSServerFactory.class);
 
 }
