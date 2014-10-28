@@ -63,7 +63,7 @@ public class SockJSServerOptions {
     this.maxBytesStreaming = json.getInteger("maxBytesStreaming", DEFAULT_MAXBYTESSTREAMING);
     this.prefix = json.getString("prefix", DEFAULT_PREFIX);
     this.libraryURL = json.getString("libraryURL", DEFAULT_LIBRARYURL);
-    JsonArray arr = json.getArray("disabledTransports");
+    JsonArray arr = json.getJsonArray("disabledTransports");
     if (arr != null) {
       for (Object str : arr) {
         if (str instanceof String) {

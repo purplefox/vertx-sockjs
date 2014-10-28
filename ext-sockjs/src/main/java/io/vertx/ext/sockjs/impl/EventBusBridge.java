@@ -269,9 +269,9 @@ public class EventBusBridge implements Handler<SockJSSocket> {
   }
 
   private static void deliverMessage(SockJSSocket sock, String address, Message message) {
-    JsonObject envelope = new JsonObject().putString("address", address).putValue("body", message.body());
+    JsonObject envelope = new JsonObject().put("address", address).put("body", message.body());
     if (message.replyAddress() != null) {
-      envelope.putString("replyAddress", message.replyAddress());
+      envelope.put("replyAddress", message.replyAddress());
     }
     sock.write(buffer(envelope.encode()));
   }
@@ -351,9 +351,9 @@ public class EventBusBridge implements Handler<SockJSSocket> {
         } else {
           ReplyException cause = (ReplyException) result.cause();
           JsonObject envelope =
-            new JsonObject().putString("address", replyAddress).putNumber("failureCode",
-              cause.failureCode()).putString("failureType", cause.failureType().name())
-              .putString("message", cause.getMessage());
+            new JsonObject().put("address", replyAddress).put("failureCode",
+              cause.failureCode()).put("failureType", cause.failureType().name())
+              .put("message", cause.getMessage());
           sock.write(buffer(envelope.encode()));
         }
         info.handlerCount--;
@@ -428,7 +428,7 @@ public class EventBusBridge implements Handler<SockJSSocket> {
       }
 
       if (addressOK) {
-        boolean matched = structureMatches(matchHolder.getObject("match"), body);
+        boolean matched = structureMatches(matchHolder.getJsonObject("match"), body);
         if (matched) {
           Boolean b = matchHolder.getBoolean("requires_auth");
           return new Match(true, b != null && b);
@@ -449,8 +449,8 @@ public class EventBusBridge implements Handler<SockJSSocket> {
   }
 
   private static void replyStatus(SockJSSocket sock, String replyAddress, String status) {
-    JsonObject body = new JsonObject().putString("status", status);
-    JsonObject envelope = new JsonObject().putString("address", replyAddress).putValue("body", body);
+    JsonObject body = new JsonObject().put("status", status);
+    JsonObject envelope = new JsonObject().put("address", replyAddress).put("body", body);
     sock.write(buffer(envelope.encode()));
   }
 
@@ -461,15 +461,15 @@ public class EventBusBridge implements Handler<SockJSSocket> {
     // Can send message other than JSON too - in which case we can't do deep matching on structure of message
     if (bodyObject instanceof JsonObject) {
       JsonObject body = (JsonObject) bodyObject;
-      for (String fieldName : match.getFieldNames()) {
-        Object mv = match.getField(fieldName);
-        Object bv = body.getField(fieldName);
+      for (String fieldName : match.fieldNames()) {
+        Object mv = match.getValue(fieldName);
+        Object bv = body.getValue(fieldName);
         // Support deep matching
         if (mv instanceof JsonObject) {
           if (!structureMatches((JsonObject) mv, bv)) {
             return false;
           }
-        } else if (!match.getField(fieldName).equals(body.getField(fieldName))) {
+        } else if (!match.getValue(fieldName).equals(body.getValue(fieldName))) {
           return false;
         }
       }

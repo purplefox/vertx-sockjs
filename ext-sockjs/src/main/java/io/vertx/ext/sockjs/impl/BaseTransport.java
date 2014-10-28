@@ -157,12 +157,12 @@ class BaseTransport {
         req.response().headers().set("Content-Type", "application/json; charset=UTF-8");
         setNoCacheHeaders(req);
         JsonObject json = new JsonObject();
-        json.putBoolean("websocket", websocket);
-        json.putBoolean("cookie_needed", options.isInsertJSESSIONID());
-        json.putArray("origins", new JsonArray().add("*:*"));
+        json.put("websocket", websocket);
+        json.put("cookie_needed", options.isInsertJSESSIONID());
+        json.put("origins", new JsonArray().add("*:*"));
         // Java ints are signed, so we need to use a long and add the offset so
         // the result is not negative
-        json.putNumber("entropy", RAND_OFFSET + new Random().nextInt());
+        json.put("entropy", RAND_OFFSET + new Random().nextInt());
         setCORS(req);
         req.response().end(json.encode());
       }

@@ -66,7 +66,7 @@ public class BridgeOptions {
     this.pingTimeout = json.getLong("pingTimeout", DEFAULT_PINGTIMEOUT);
     this.replyTimeout = json.getLong("replyTimeout", DEFAULT_REPLYTIMEOUT);
     //TODO simplify common code
-    JsonArray arr = json.getArray("inboundPermitteds");
+    JsonArray arr = json.getJsonArray("inboundPermitteds");
     if (arr != null) {
       for (Object obj: arr) {
         if (obj instanceof JsonObject) {
@@ -77,7 +77,7 @@ public class BridgeOptions {
         }
       }
     }
-    arr = json.getArray("outboundPermitteds");
+    arr = json.getJsonArray("outboundPermitteds");
     if (arr != null) {
       for (Object obj: arr) {
         if (obj instanceof JsonObject) {
