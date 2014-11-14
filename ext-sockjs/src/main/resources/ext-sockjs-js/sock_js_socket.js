@@ -48,7 +48,7 @@ var SockJSSocket = function(j_val) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'function') {
       j_sockJSSocket.exceptionHandler(function(jVal) {
-      handler(new Throwable(jVal));
+      handler(utils.convRuntimeReturn(jVal));
     });
       return that;
     } else utils.invalidArgs();
