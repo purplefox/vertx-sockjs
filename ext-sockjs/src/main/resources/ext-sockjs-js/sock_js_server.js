@@ -21,8 +21,9 @@ var HttpServer = require('vertx-js/http_server');
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JSockJSServer = io.vertx.ext.sockjs.SockJSServer;
-var BridgeOptions = io.vertx.ext.sockjs.BridgeOptions;
 var SockJSServerOptions = io.vertx.ext.sockjs.SockJSServerOptions;
+var SockJSServerOptions = io.vertx.ext.sockjs.SockJSServerOptions;
+var BridgeOptions = io.vertx.ext.sockjs.BridgeOptions;
 
 /**
 
@@ -65,19 +66,16 @@ var SockJSServer = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this._vertxgen = true;
-
-  // Get a reference to the underlying Java delegate
-  this._jdel = function() {
-    return j_sockJSServer;
-  }
-
+  // A reference to the underlying Java delegate
+  // NOTE! This is an internal API and must not be used in user code.
+  // If you rely on this property your code is likely to break if we change it / remove it without warning.
+  this._jdel = j_sockJSServer;
 };
 
 SockJSServer.sockJSServer = function(vertx, httpServer) {
   var __args = arguments;
-  if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._vertxgen && typeof __args[1] === 'object' && __args[1]._vertxgen) {
-    return new SockJSServer(JSockJSServer.sockJSServer(vertx._jdel(), httpServer._jdel()));
+  if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object' && __args[1]._jdel) {
+    return new SockJSServer(JSockJSServer.sockJSServer(vertx._jdel, httpServer._jdel));
   } else utils.invalidArgs();
 };
 

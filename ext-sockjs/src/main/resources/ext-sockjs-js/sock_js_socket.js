@@ -48,7 +48,7 @@ var SockJSSocket = function(j_val) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'function') {
       j_sockJSSocket.exceptionHandler(function(jVal) {
-      handler(utils.convRuntimeReturn(jVal));
+      handler(utils.convReturnTypeUnknown(jVal));
     });
       return that;
     } else utils.invalidArgs();
@@ -90,8 +90,8 @@ var SockJSSocket = function(j_val) {
 
   this.write = function(data) {
     var __args = arguments;
-    if (__args.length === 1 && typeof __args[0] === 'object' && __args[0]._vertxgen) {
-      j_sockJSSocket.write(data._jdel());
+    if (__args.length === 1 && typeof __args[0] === 'object' && __args[0]._jdel) {
+      j_sockJSSocket.write(data._jdel);
       return that;
     } else utils.invalidArgs();
   };
@@ -178,13 +178,10 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  this._vertxgen = true;
-
-  // Get a reference to the underlying Java delegate
-  this._jdel = function() {
-    return j_sockJSSocket;
-  }
-
+  // A reference to the underlying Java delegate
+  // NOTE! This is an internal API and must not be used in user code.
+  // If you rely on this property your code is likely to break if we change it / remove it without warning.
+  this._jdel = j_sockJSSocket;
 };
 
 // We export the Constructor function
