@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>ext-routematcher</artifactId>
+      <artifactId>vertx-routematcher</artifactId>
       <version>3.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
