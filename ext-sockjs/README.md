@@ -1,3 +1,0 @@
-# SockJS
-
-TODO

@@ -1,4 +1,2 @@
-ext
-===
+# SockJS Support for Vert.x
 
-Vert.x extensions - basically the Vert.x official stack
