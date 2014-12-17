@@ -14,6 +14,7 @@
  * under the License.
  */
 
+/** @module ext-sockjs-js/sock_js_socket */
 var utils = require('vertx-js/util/utils');
 var Buffer = require('vertx-js/buffer');
 var WriteStream = require('vertx-js/write_stream');
@@ -28,7 +29,7 @@ var JSockJSSocket = io.vertx.ext.sockjs.SockJSSocket;
 /**
 
  You interact with SockJS clients through instances of SockJS socket.<p>
-  @class
+ @class
 */
 var SockJSSocket = function(j_val) {
 
@@ -37,6 +38,12 @@ var SockJSSocket = function(j_val) {
   ReadStream.call(this, j_val);
   WriteStream.call(this, j_val);
 
+  /**
+
+   @public
+
+   @return {boolean}
+   */
   this.writeQueueFull = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -44,6 +51,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param handler {function} 
+   @return {SockJSSocket}
+   */
   this.exceptionHandler = function(handler) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'function') {
@@ -54,6 +67,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param handler {function} 
+   @return {SockJSSocket}
+   */
   this.handler = function(handler) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'function') {
@@ -64,6 +83,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+
+   @return {SockJSSocket}
+   */
   this.pause = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -72,6 +97,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+
+   @return {SockJSSocket}
+   */
   this.resume = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -80,6 +111,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param endHandler {function} 
+   @return {SockJSSocket}
+   */
   this.endHandler = function(endHandler) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'function') {
@@ -88,6 +125,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param data {Buffer} 
+   @return {SockJSSocket}
+   */
   this.write = function(data) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'object' && __args[0]._jdel) {
@@ -96,6 +139,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param maxSize {number} 
+   @return {SockJSSocket}
+   */
   this.setWriteQueueMaxSize = function(maxSize) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] ==='number') {
@@ -104,6 +153,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param handler {function} 
+   @return {SockJSSocket}
+   */
   this.drainHandler = function(handler) {
     var __args = arguments;
     if (__args.length === 1 && typeof __args[0] === 'function') {
@@ -112,9 +167,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  /*
+  /**
   
-  */
+   @public
+
+   @return {string}
+   */
   this.writeHandlerID = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -122,10 +180,12 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  /*
+  /**
    Close it
-  
-  */
+
+   @public
+
+   */
   this.close = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -133,10 +193,13 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  /*
+  /**
    Return the remote address for this socket
-  
-  */
+
+   @public
+
+   @return {SocketAddress}
+   */
   this.remoteAddress = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -144,10 +207,13 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  /*
+  /**
    Return the local address for this socket
-  
-  */
+
+   @public
+
+   @return {SocketAddress}
+   */
   this.localAddress = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -155,11 +221,14 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  /*
+  /**
    Return the headers corresponding to the last request for this socket or the websocket handshake
    Any cookie headers will be removed for security reasons
-  
-  */
+
+   @public
+
+   @return {MultiMap}
+   */
   this.headers = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -167,10 +236,13 @@ var SockJSSocket = function(j_val) {
     } else utils.invalidArgs();
   };
 
-  /*
+  /**
    Return the URI corresponding to the last request for this socket or the websocket handshake
-  
-  */
+
+   @public
+
+   @return {string}
+   */
   this.uri = function() {
     var __args = arguments;
     if (__args.length === 0) {

@@ -14,6 +14,7 @@
  * under the License.
  */
 
+/** @module ext-sockjs-js/sock_js_server */
 var utils = require('vertx-js/util/utils');
 var SockJSSocket = require('ext-sockjs-js/sock_js_socket');
 var HttpServer = require('vertx-js/http_server');
@@ -27,13 +28,20 @@ var BridgeOptions = io.vertx.ext.sockjs.BridgeOptions;
 
 /**
 
-  @class
+ @class
 */
 var SockJSServer = function(j_val) {
 
   var j_sockJSServer = j_val;
   var that = this;
 
+  /**
+
+   @public
+   @param options {Object} 
+   @param sockHandler {function} 
+   @return {SockJSServer}
+   */
   this.installApp = function(options, sockHandler) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
@@ -44,6 +52,13 @@ var SockJSServer = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+   @param options {Object} 
+   @param bridgeOptions {Object} 
+   @return {SockJSServer}
+   */
   this.bridge = function(options, bridgeOptions) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'object') {
@@ -52,6 +67,11 @@ var SockJSServer = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+
+   */
   this.close = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -59,6 +79,11 @@ var SockJSServer = function(j_val) {
     } else utils.invalidArgs();
   };
 
+  /**
+
+   @public
+
+   */
   this.installTestApplications = function() {
     var __args = arguments;
     if (__args.length === 0) {
@@ -72,6 +97,13 @@ var SockJSServer = function(j_val) {
   this._jdel = j_sockJSServer;
 };
 
+/**
+
+ @memberof module:ext-sockjs-js/sock_js_server
+ @param vertx {Vertx} 
+ @param httpServer {HttpServer} 
+ @return {SockJSServer}
+ */
 SockJSServer.sockJSServer = function(vertx, httpServer) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object' && __args[1]._jdel) {
