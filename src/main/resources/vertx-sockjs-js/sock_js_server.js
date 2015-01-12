@@ -14,9 +14,9 @@
  * under the License.
  */
 
-/** @module ext-sockjs-js/sock_js_server */
+/** @module vertx-sockjs-js/sock_js_server */
 var utils = require('vertx-js/util/utils');
-var SockJSSocket = require('ext-sockjs-js/sock_js_socket');
+var SockJSSocket = require('vertx-sockjs-js/sock_js_socket');
 var HttpServer = require('vertx-js/http_server');
 
 var io = Packages.io;
@@ -99,7 +99,7 @@ var SockJSServer = function(j_val) {
 
 /**
 
- @memberof module:ext-sockjs-js/sock_js_server
+ @memberof module:vertx-sockjs-js/sock_js_server
  @param vertx {Vertx} 
  @param httpServer {HttpServer} 
  @return {SockJSServer}

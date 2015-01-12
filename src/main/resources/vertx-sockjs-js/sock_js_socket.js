@@ -14,7 +14,7 @@
  * under the License.
  */
 
-/** @module ext-sockjs-js/sock_js_socket */
+/** @module vertx-sockjs-js/sock_js_socket */
 var utils = require('vertx-js/util/utils');
 var Buffer = require('vertx-js/buffer');
 var WriteStream = require('vertx-js/write_stream');
